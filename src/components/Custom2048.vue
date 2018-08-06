@@ -4,8 +4,8 @@
     <canvas ref="tiles" width="360" height="360"></canvas>
   </div>
 </template>
-<script>
-
+<script lang="ts">
+import Vue,{ Component } from 'vue';
 const ROW = 4
 const COL = 4
 
@@ -16,7 +16,70 @@ const COL = 4
  *            4、...
  *
  */
-export default {
+
+function getListener () {
+  const KEYDOWN = {
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40
+  }
+  let startX, startY
+  return {
+    touchstart: (e) => {
+      // 防止滑动时，移动端页面上下抖动
+      e.preventDefault()
+      startX = e.touches[0].pageX
+      startY = e.touches[0].pageY
+    },
+    touchend: (e) => {
+      e.preventDefault()
+
+      let direction = null
+      let endX = e.changedTouches[0].pageX
+      let endY = e.changedTouches[0].pageY
+      let horizontal = endX - startX
+      let vertical = endY - startY
+      // 当touchend坐标偏移小于5像素时，不触发movingtiles事件。
+      if (Math.abs(horizontal) <= 5 && Math.abs(vertical) <= 5) {
+        return
+      }
+      if (Math.abs(horizontal) > Math.abs(vertical)) {
+        if (horizontal > 0) {
+          direction = 'RIGHT'
+        } else if (horizontal < 0) {
+          direction = 'LEFT'
+        }
+      } else if (Math.abs(horizontal) < Math.abs(vertical)) {
+        if (vertical > 0) {
+          direction = 'DOWN'
+        } else if (vertical < 0) {
+          direction = 'UP'
+        }
+      }
+      this.$emit('movingtiles', direction)
+    },
+    keydown: (e) => {
+      switch (e.keyCode) {
+        case KEYDOWN.UP:
+          this.$emit('movingtiles', 'UP')
+          break
+        case KEYDOWN.RIGHT:
+          this.$emit('movingtiles', 'RIGHT')
+          break
+        case KEYDOWN.DOWN:
+          this.$emit('movingtiles', 'DOWN')
+          break
+        case KEYDOWN.LEFT:
+          this.$emit('movingtiles', 'LEFT')
+          break
+      }
+    }
+  }
+}
+
+
+const components = Vue.extend( {
   data () {
     return {
       emptyGrids: null,
@@ -160,7 +223,7 @@ export default {
     getNumberStyle (number) {
       let backgroundColor = 'black'
       let color = 'white'
-      let fontSize = 46
+      let fontSize:number = 46
       switch (number) {
         case 2:
           backgroundColor = '#eee4da'
@@ -184,23 +247,23 @@ export default {
           break
         case 128:
           backgroundColor = '#edcf72'
-          fontSize = '32'
+          fontSize = 32
           break
         case 256:
           backgroundColor = '#edcc61'
-          fontSize = '32'
+          fontSize = 32
           break
         case 512:
           backgroundColor = '#9c0'
-          fontSize = '32'
+          fontSize = 32
           break
         case 1024:
           backgroundColor = '#33b5e5'
-          fontSize = '20'
+          fontSize = 20
           break
         case 2048:
           backgroundColor = '#09c'
-          fontSize = '20'
+          fontSize = 20
           break
       }
       return {
@@ -233,7 +296,7 @@ export default {
       }
       return true
     },
-    eventListenerSwitch (sw = 'on') {
+    eventListenerSwitch (sw:string = 'on') {
       this.$nextTick(() => {
         let canvas = this.$refs.tiles
         if (sw === 'on') {
@@ -385,7 +448,7 @@ export default {
         let chessBoard = this.$refs.chessBoard
 
         let width = tiles.width
-        let RATIO = (() => {
+        let RATIO = (():number => {
           let ctx = tiles.getContext('2d')
           let dpr = window.devicePixelRatio || 1
           let bsr = ctx.webkitBackingStorePixelRatio ||
@@ -428,77 +491,20 @@ export default {
     // 开始游戏
     this.start()
   }
-}
-function getListener () {
-  const KEYDOWN = {
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40
-  }
-  let startX, startY
-  return {
-    touchstart: (e) => {
-      // 防止滑动时，移动端页面上下抖动
-      e.preventDefault()
-      startX = e.touches[0].pageX
-      startY = e.touches[0].pageY
-    },
-    touchend: (e) => {
-      e.preventDefault()
+})
 
-      let direction = null
-      let endX = e.changedTouches[0].pageX
-      let endY = e.changedTouches[0].pageY
-      let horizontal = endX - startX
-      let vertical = endY - startY
-      // 当touchend坐标偏移小于5像素时，不触发movingtiles事件。
-      if (Math.abs(horizontal) <= 5 && Math.abs(vertical) <= 5) {
-        return
-      }
-      if (Math.abs(horizontal) > Math.abs(vertical)) {
-        if (horizontal > 0) {
-          direction = 'RIGHT'
-        } else if (horizontal < 0) {
-          direction = 'LEFT'
-        }
-      } else if (Math.abs(horizontal) < Math.abs(vertical)) {
-        if (vertical > 0) {
-          direction = 'DOWN'
-        } else if (vertical < 0) {
-          direction = 'UP'
-        }
-      }
-      this.$emit('movingtiles', direction)
-    },
-    keydown: (e) => {
-      switch (e.keyCode) {
-        case KEYDOWN.UP:
-          this.$emit('movingtiles', 'UP')
-          break
-        case KEYDOWN.RIGHT:
-          this.$emit('movingtiles', 'RIGHT')
-          break
-        case KEYDOWN.DOWN:
-          this.$emit('movingtiles', 'DOWN')
-          break
-        case KEYDOWN.LEFT:
-          this.$emit('movingtiles', 'LEFT')
-          break
-      }
-    }
-  }
-}
+export default components;
+
 </script>
 <style lang="less">
-  .Custom2048 {
+.Custom2048 {
     canvas {
-      position: absolute;
-      top: 120px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: block;
-      border-radius: 6px;
+        position: absolute;
+        top: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: block;
+        border-radius: 6px;
     }
-  }
+}
 </style>

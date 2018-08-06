@@ -1,10 +1,6 @@
 <template>
   <div class="custom2048-page">
-    <Custom2048
-      ref="custom2048"
-      class="custom2048-outer-container"
-      @changescore="handleChangeScore"
-      @gameover="handleGameover"></Custom2048>
+    <Custom2048 ref="custom2048" class="custom2048-outer-container" @changescore="handleChangeScore" @gameover="handleGameover"></Custom2048>
     <div class="menu-container">
       <div class="score-container">
         <div class="block current-score">
@@ -22,9 +18,12 @@
 </template>
 
 <script>
-import Custom2048 from 'components/Custom2048'
+import Vue from 'vue';
+import Custom2048 from '../../components/Custom2048'
 
-export default {
+console.log(Custom2048);
+
+const components = Vue.extend({
   components: {
     Custom2048
   },
@@ -56,49 +55,51 @@ export default {
 
     }
   }
-}
+})
+
+export default components
 </script>
 
 <style lang="less">
-  .custom2048-page {
+.custom2048-page {
     height: 100%;
     font-family: 'Microsoft YaHei';
     background-color: #faf8ef;
     .menu-container {
-      width: 300px;
-      margin: 0 auto;
-      text-align: right;
+        width: 300px;
+        margin: 0 auto;
+        text-align: right;
     }
     .block {
-      display: inline-block;
-      padding: 3px 12px;
-      height: 2;
-      text-align: center;
-      background-color: #8f7a66;
-      color: #f9f6f2;
-      border-radius: 6px;
-      font-size: 18px;
-      margin: 5px;
+        display: inline-block;
+        padding: 3px 12px;
+        height: 2;
+        text-align: center;
+        background-color: #8f7a66;
+        color: #f9f6f2;
+        border-radius: 6px;
+        font-size: 18px;
+        margin: 5px;
     }
     .score-container .block {
-      color: rgba(255,255,255,0.6);
-      font-size: 14px;
-      width: 48px;
-      background-color: rgba(143, 122, 102, .8);
-      span {
-        display: block;
-        color: white;
-      }
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+        width: 48px;
+        background-color: rgba(143, 122, 102, 0.8);
+        span {
+            display: block;
+            color: white;
+        }
     }
     .restart {
-      width: 134px;
-      height: 36px;
-      line-height: 36px;
-      background-color: #d4430f;
-      cursor: pointer;
-      &:active {
-        opacity: 0.8;
-      }
+        width: 134px;
+        height: 36px;
+        line-height: 36px;
+        background-color: #d4430f;
+        cursor: pointer;
+        &:active {
+            opacity: 0.8;
+        }
     }
-  }
+}
 </style>
