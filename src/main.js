@@ -1,5 +1,4 @@
 import Vue from 'vue'
-
 import App from './biz/custom2048/index.vue'
 
 import './global/base.less'

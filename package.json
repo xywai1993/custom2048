@@ -5,7 +5,8 @@
   "author": "zhengchuxin",
   "private": true,
   "scripts": {
-    "parcel": "parcel  index.html"
+    "parcel": "parcel  index.html",
+    "parcel2": "parcel index2.html"
   },
   "dependencies": {
     "components": "^0.1.0",
