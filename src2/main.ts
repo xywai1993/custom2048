@@ -2,16 +2,16 @@ import './style.css';
 import tool from './tool';
 
 interface DataArr {
-    num: number | string;
+    num: number | '';
     row: number;
     col: number;
 }
 
 const ROW = 4; // 行
 const COL = 4; // 列
-let space: number = 20;
-let boxWidth: number = 0;
-const canvas = document.querySelector('#canvas');
+let space: number = 20; //方块间隔
+let boxWidth: number = 0; // 方块宽度
+const canvas = <HTMLCanvasElement>document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const dataArray: DataArr[] = [];
 
@@ -26,12 +26,13 @@ const createBox = (row: number, col: number) => {
     });
 };
 
-const createNum = (num: number | string, row: number, col: number) => {
+//创建数字
+const createNum = (num: number | '', row: number, col: number) => {
     const postion = getPosition(row, col);
     ctx.fillStyle = '#fff';
     ctx.font = '48px serif';
     const space = boxWidth / 2;
-    ctx.fillText(num, postion.left + space - 11, postion.top + space + 15);
+    ctx.fillText(String(num), postion.left + space - 11, postion.top + space + 15);
     dataArray[row * ROW + col].num = num;
 };
 
@@ -53,6 +54,7 @@ const setCanvasWH = () => {
     canvas.height = w - 2;
 };
 
+// 游戏数据表
 const createDataArr = (row: number, col: number) => {
     tool.createArray(row).forEach(i => {
         tool.createArray(col).forEach(k => {
@@ -65,23 +67,51 @@ const createDataArr = (row: number, col: number) => {
     });
 };
 
+//随机数字 并生成
 const randowNum = () => {
     const arr = dataArray.filter((item, i) => {
-        if (!item.num) {
-            return item;
-        }
+        return !item.num;
     });
+    console.log(arr);
 
+    if (arr.length <= 0) {
+        return;
+    }
     const randow = Math.floor(Math.random() * arr.length);
     const data = arr[randow];
     const num = Math.floor(Math.random() * 100) > 50 ? 2 : 4;
     createNum(num, data.row, data.col);
 };
 
+// 判断是否游戏结束
+const isGameOver = () => {
+    let gameOver = true;
+
+    const arr = dataArray.filter((item, i) => {
+        return !item.num;
+    });
+
+    //判断上下左右是否有可以合并的项
+    for (let i = 0; i < dataArray.length; i++) {
+        const item = dataArray[i];
+        const up = item.row === 0 ? null : dataArray[i - COL].num;
+        const down = item.row === 3 ? null : dataArray[i + COL].num;
+        const left = item.col === 0 ? null : dataArray[i - 1].num;
+        const right = item.col === 3 ? null : dataArray[i + 1].num;
+
+        const num = item.num;
+        if (num === up || num === down || num === left || num === right) {
+            gameOver = false;
+            break;
+        }
+    }
+    return arr.length === 0 && gameOver;
+};
+
 const goLeft = () => {
     //分组  [0,1,2,3]  [4,5,6,7] [8,9,10,11] [12,13,14,15]
     const createGroup = () => {
-        const arr: number[] = [];
+        const arr: DataArr[][] = [];
         tool.createArray(ROW).map(i => {
             const data = tool.deepClone(dataArray);
             arr.push(data.slice(i * ROW, (i + 1) * ROW));
@@ -139,7 +169,7 @@ const goLeft = () => {
 const goRight = () => {
     //分组  [0,1,2,3]  [4,5,6,7] [8,9,10,11] [12,13,14,15]
     const createGroup = () => {
-        const arr: number[] = [];
+        const arr: DataArr[][] = [];
         tool.createArray(ROW).map(i => {
             const data = tool.deepClone(dataArray);
             arr.push(data.slice(i * ROW, (i + 1) * ROW));
@@ -196,8 +226,8 @@ const goRight = () => {
 const goUp = () => {
     //分组  [0,1,2,3]  [4,5,6,7] [8,9,10,11] [12,13,14,15]
     const createGroup = () => {
-        const arr: number[] = [];
-        const data = tool.deepClone(dataArray);
+        const arr: DataArr[][] = [];
+        const data: DataArr[] = tool.deepClone(dataArray);
         data.map((item, i) => {
             arr[item.col] = arr[item.col] ? arr[item.col] : [];
 
@@ -253,9 +283,9 @@ const goUp = () => {
 const goDown = () => {
     //分组  [0,1,2,3]  [4,5,6,7] [8,9,10,11] [12,13,14,15]
     const createGroup = () => {
-        const arr: number[] = [];
-        const data = tool.deepClone(dataArray);
-        data.map((item, i) => {
+        const arr: DataArr[][] = [];
+        const data: DataArr[] = tool.deepClone(dataArray);
+        data.map(item => {
             arr[item.col] = arr[item.col] ? arr[item.col] : [];
 
             arr[item.col][item.row] = item;
@@ -309,7 +339,14 @@ const goDown = () => {
     // console.log(dataArray);
 };
 
+//根据数据表重绘
 const drawCanvas = () => {
+    //判断是否游戏结束
+    if (isGameOver()) {
+        alert('你死了');
+        return;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     createBox(ROW, COL);
     dataArray.map(item => {
@@ -317,6 +354,8 @@ const drawCanvas = () => {
             createNum(item.num, item.row, item.col);
         }
     });
+
+    randowNum();
 };
 
 createDataArr(ROW, COL);
@@ -324,19 +363,14 @@ setCanvasWH();
 createBox(ROW, COL);
 randowNum();
 randowNum();
-randowNum();
-randowNum();
-randowNum();
 
-console.log(dataArray);
-
+// 滑动监听
 tool.touchDirection(canvas, dir => {
     console.log(dir);
     if (dir.isTouch) {
         switch (dir.dir) {
             case 'left':
                 goLeft();
-
                 break;
             case 'right':
                 goRight();
@@ -352,4 +386,35 @@ tool.touchDirection(canvas, dir => {
         }
         drawCanvas();
     }
+});
+
+const KEYDOWN = {
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40
+};
+document.addEventListener('keydown', e => {
+    switch (e.keyCode) {
+        case KEYDOWN.UP:
+            goUp();
+            break;
+        case KEYDOWN.RIGHT:
+            goRight();
+            break;
+        case KEYDOWN.DOWN:
+            goDown();
+            break;
+        case KEYDOWN.LEFT:
+            goLeft();
+            break;
+    }
+    drawCanvas();
+});
+
+document.addEventListener('touchmove', e => {
+    e.preventDefault();
+});
+document.addEventListener('touchend', e => {
+    e.preventDefault();
 });

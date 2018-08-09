@@ -2,6 +2,13 @@
     margin: 0;
     padding: 0;
 }
+html {
+    max-width: 750px;
+}
+body {
+    margin: 0 auto;
+    max-width: 750px;
+}
 #canvas {
     border: 1px solid #000000;
 }

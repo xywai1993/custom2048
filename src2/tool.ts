@@ -4,10 +4,10 @@ interface Dir {
 }
 
 const tool = {
-    deepClone(obj: object) {
+    deepClone(obj: any) {
         return JSON.parse(JSON.stringify(obj));
     },
-    createArray(num: number) {
+    createArray(num: number): number[] {
         return Array.from({ length: num }).map((item, i) => {
             return i;
         });
