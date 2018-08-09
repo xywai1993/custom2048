@@ -11,13 +11,15 @@ const ROW = 4; // 行
 const COL = 4; // 列
 let space: number = 20; //方块间隔
 let boxWidth: number = 0; // 方块宽度
+const replayBtn = document.querySelector('#replay');
 const canvas = <HTMLCanvasElement>document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
-const dataArray: DataArr[] = [];
+let dataArray: DataArr[] = [];
 
 // 创建4*4格子
 const createBox = (row: number, col: number) => {
-    ctx.fillStyle = '#999';
+    const style = getNumberStyle();
+    ctx.fillStyle = style.backgroundColor;
     tool.createArray(row).forEach(i => {
         tool.createArray(col).forEach(k => {
             const postion = getPosition(i, k);
@@ -29,10 +31,19 @@ const createBox = (row: number, col: number) => {
 //创建数字
 const createNum = (num: number | '', row: number, col: number) => {
     const postion = getPosition(row, col);
-    ctx.fillStyle = '#fff';
-    ctx.font = '48px serif';
+    const style = getNumberStyle(num);
     const space = boxWidth / 2;
-    ctx.fillText(String(num), postion.left + space - 11, postion.top + space + 15);
+
+    ctx.fillStyle = style.backgroundColor;
+    ctx.fillRect(postion.left, postion.top, boxWidth, boxWidth);
+
+    ctx.fillStyle = style.color;
+    ctx.font = `${style.fontSize}px serif`;
+
+    //字体宽度
+    const textWidth = ctx.measureText(String(num)).width;
+
+    ctx.fillText(String(num), postion.left + boxWidth / 2 - textWidth / 2, postion.top + space + 15);
     dataArray[row * ROW + col].num = num;
 };
 
@@ -56,6 +67,7 @@ const setCanvasWH = () => {
 
 // 游戏数据表
 const createDataArr = (row: number, col: number) => {
+    dataArray = [];
     tool.createArray(row).forEach(i => {
         tool.createArray(col).forEach(k => {
             dataArray.push({
@@ -72,7 +84,6 @@ const randowNum = () => {
     const arr = dataArray.filter((item, i) => {
         return !item.num;
     });
-    console.log(arr);
 
     if (arr.length <= 0) {
         return;
@@ -283,6 +294,8 @@ const goUp = () => {
 const goDown = () => {
     //分组  [0,1,2,3]  [4,5,6,7] [8,9,10,11] [12,13,14,15]
     const createGroup = () => {
+        console.log(dataArray);
+
         const arr: DataArr[][] = [];
         const data: DataArr[] = tool.deepClone(dataArray);
         data.map(item => {
@@ -358,11 +371,69 @@ const drawCanvas = () => {
     randowNum();
 };
 
-createDataArr(ROW, COL);
+const getNumberStyle = (number: number | string = '') => {
+    let backgroundColor = '#eee4da';
+    let color = 'white';
+    let fontSize: number = 46;
+    switch (number) {
+        case 2:
+            backgroundColor = '#eee4da';
+            color = '#776e50';
+            break;
+        case 4:
+            backgroundColor = '#ede0c8';
+            color = '#776e50';
+            break;
+        case 8:
+            backgroundColor = '#f2b179';
+            break;
+        case 16:
+            backgroundColor = '#f59563';
+            break;
+        case 32:
+            backgroundColor = '#f67c5f';
+            break;
+        case 64:
+            backgroundColor = '#f65e3b';
+            break;
+        case 128:
+            backgroundColor = '#edcf72';
+            fontSize = 32;
+            break;
+        case 256:
+            backgroundColor = '#edcc61';
+            fontSize = 32;
+            break;
+        case 512:
+            backgroundColor = '#9c0';
+            fontSize = 32;
+            break;
+        case 1024:
+            backgroundColor = '#33b5e5';
+            fontSize = 20;
+            break;
+        case 2048:
+            backgroundColor = '#09c';
+            fontSize = 20;
+            break;
+    }
+    return {
+        backgroundColor,
+        color,
+        fontSize
+    };
+};
+
+//重玩
+const rePlay = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    createDataArr(ROW, COL);
+    createBox(ROW, COL);
+    randowNum();
+};
+
 setCanvasWH();
-createBox(ROW, COL);
-randowNum();
-randowNum();
+rePlay();
 
 // 滑动监听
 tool.touchDirection(canvas, dir => {
@@ -394,27 +465,52 @@ const KEYDOWN = {
     RIGHT: 39,
     DOWN: 40
 };
-document.addEventListener('keydown', e => {
+document.addEventListener('keyup', e => {
     switch (e.keyCode) {
         case KEYDOWN.UP:
             goUp();
+            drawCanvas();
             break;
         case KEYDOWN.RIGHT:
             goRight();
+            drawCanvas();
             break;
         case KEYDOWN.DOWN:
             goDown();
+            drawCanvas();
             break;
         case KEYDOWN.LEFT:
             goLeft();
+            drawCanvas();
             break;
     }
-    drawCanvas();
 });
 
-document.addEventListener('touchmove', e => {
+document.addEventListener('touchstart', e => {}, false);
+
+// replayBtn.addEventListener('touchstart', () => {
+//     rePlay();
+// });
+replayBtn.addEventListener(
+    'click',
+    () => {
+        rePlay();
+    },
+    false
+);
+
+canvas.addEventListener('touchstart', e => {
+    // document.documentElement.scrollTop = 0;
+    e.stopPropagation();
     e.preventDefault();
 });
-document.addEventListener('touchend', e => {
+canvas.addEventListener('touchmove', e => {
+    // document.documentElement.scrollTop = 0;
+    e.stopPropagation();
+    e.preventDefault();
+});
+canvas.addEventListener('touchend', e => {
+    // document.documentElement.scrollTop = 0;
+    e.stopPropagation();
     e.preventDefault();
 });
